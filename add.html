@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>View and Upload Data Buttons</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    #data-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    #data-table th, #data-table td {
+      text-align: left;
+      padding: 8px;
+    }
+    #data-table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    #data-table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #upload-data { 
+    }
+  </style>
+</head>
+<body>
+  <div id="upload-data">
+    <input type="text" id="data-input">
+    <button onclick="uploadData()">Upload</button>
+  </div>
+  <table id="data-table">
+    <thead>
+      <th>
+        Name
+      </th>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <div id="data"></div>
+  <a href="auto.html">Move to main page</a>
+  <script>
+    $(document).ready(function() {
+      viewData();
+    });
+    function viewData() {
+      // Get the data from the database
+      $.getJSON('http://localhost/autocomplete/view.php', function(data) {
+        // Clear the current data in the table body
+        $('#data-table tbody').empty();
+        $.each(data, function(i, row) {
+          $('#data-table tbody').append(
+            '<tr><td>' + row.name + '</td><td><button onclick="removeData(\'' + row.name + '\')">Remove</button></td></tr>'
+          );
+        });
+      });
+    }
+    function removeData(name) {
+      $.post('http://localhost/autocomplete/remove.php', { name: name }, function(response) {
+        if (response.indexOf("success") > -1) {
+          // Remove the row from the table body
+          $('#data-table tbody > tr').filter(function() {
+            return $(this).find('td').text() == name;
+          }).remove();
+          // Reload the page to show the updated data
+          //location.reload();
+          viewData();
+          //toggleUpload();
+        } else {
+          alert("Error removing data!");
+        }
+      });
+    }
+    function toggleUpload() {
+      $('#upload-data').toggle();
+    }
+    function uploadData() {
+      var data = $('#data-input').val();
+      if (data.length == 0) {
+    alert("Data cannot be empty!");
+    return;
+  }
+      $.post('http://localhost/autocomplete/upload.php', { data: data }, function(response) {
+        if (response.indexOf("success") > -1) {
+          // Clear the input field and hide the upload data section
+          $('#data-input').val('');
+          $('#upload-data').hide();
+          // Reload the page to show the updated data
+          viewData();
+          toggleUpload();
+        } else {
+          alert("Error uploading data!");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

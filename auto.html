@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0 , user-scalable=1, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <!-- Bootstrap 4 CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/pdfmake.js'></script> 
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.70/vfs_fonts.js'></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function(){
+            // Add new row
+            $("#add-row").click(function(){
+                var pname = $("#product_name").val();
+                var count = $("#count").val();
+                $(".table tbody tr").last().after(
+                    '<tr class="fadetext">'+
+                        '<td><input type="checkbox" id="select-row"></td>'+
+                        '<td>'+pname+'</td>'+
+                        '<td>'+count+'</td>'+
+                    '</tr>'
+                );
+            })
+            // Generate PDF
+            // Select all checkbox
+            $("#select-all").click(function(){
+                var isSelected = $(this).is(":checked");
+                if(isSelected){
+                    $(".table tbody tr").each(function(){
+                        $(this).find('input[type="checkbox"]').prop('checked', true);
+                    })
+                }else{
+                    $(".table tbody tr").each(function(){
+                        $(this).find('input[type="checkbox"]').prop('checked', false);
+                    })
+                }
+            });
+            // Remove selected rows
+            $("#remove-row").click(function(){
+                $(".table tbody tr").each(function(){
+                    var isChecked = $(this).find('input[type="checkbox"]').is(":checked");
+                    var tableSize = $(".table tbody tr").length;
+                    if(isChecked){
+                        $(this).remove();
+                    }
+                });
+            });
+        })
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-btn">
+            <button class="btn btn-primary btn-round" onclick="window.location.href='admin.html'">Admin</button>
+        </div>
+        <div class="form-div">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="popup">
+                    <input type="text" class="form-control" id="product_name" placeholder="Product Name">
+                </div></div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="count" placeholder="Count">
+                </div>
+                <div class="col-md-3" style="text-align: right;">
+                    <button class="btn btn-primary" id="add-row">Add Row</button>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <table class="table" id="prd">
+                <thead>
+                    <tr>
+                        <th>All <input type="checkbox" id="select-all"></th>
+                        <th>Product Name</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="remove-row" id="remove-row">Remove Row</button>
+            <button class="btn btn-primary" id="generate-pdf">Generate PDF</button>
+        </div>
+    </div>
+    <style>
+        .admin-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .btn-round {
+            border-radius: 20px;
+        }
+    </style>
+    <script type="text/javascript">
+        $("#generate-pdf").click(function() {
+    var headers = ["Serial no", "Product Name", "Count"];
+    var tableData = [headers]; // Initialize with header row
+    var rowCount = 1;
+    $(".table tbody tr").each(function() {
+        var rowData = [];
+        if ($(this).find('td:eq(1)').text() !== '') {
+            rowData.push(String(rowCount));
+            rowData.push($(this).find('td:eq(1)').text()); // product_name column
+            rowData.push($(this).find('td:eq(2)').text()); // count column
+            tableData.push(rowData);
+            rowCount++;
+        }
+    });
+    var docDefinition = {
+        content: [
+            { text: "Product Report", style: "header" },
+            {
+                table: {
+                    headerRows: 1,
+                    body: tableData
+                }
+            }
+        ],
+        styles: {
+            header: {
+                fontSize: 18,
+                bold: true,
+                marginBottom: 10
+            }
+        },
+        footer: function(currentPage, pageCount) { 
+            return { 
+                text: "Printed on " + new Date().toLocaleString() + " - Page " + currentPage.toString() + " of " + pageCount.toString(), 
+                alignment: "right",
+                margin: [0, 0, 50, 0] 
+            }; 
+        } 
+    };
+    pdfMake.createPdf(docDefinition).download("table.pdf");
+});
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
+</body>
+</html>
